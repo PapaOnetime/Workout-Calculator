@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Evidence-Based Workout Calculator</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mu:#5d6773;--ac:#0b6e4f;--bd:#dde1e6;--wn:#8a5a00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101316;--card:#1a1f24;--tx:#e8ebee;--mu:#9aa5b1;--ac:#4cc79a;--bd:#2b333b;--wn:#e0b25a}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;padding:14px}
+h1{font-size:1.3rem;margin:4px 0 2px}h2{font-size:1.02rem;margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin:12px 0}
+.sub{color:var(--mu);font-size:.85rem}
+label{display:block;font-size:.82rem;color:var(--mu);margin:8px 0 3px}
+input,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:1rem}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.ex{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:6px;align-items:center;margin:6px 0}
+.ex b{font-weight:600;font-size:.9rem}
+button{width:100%;padding:12px;border:0;border-radius:8px;background:var(--ac);color:#fff;font-size:1rem;font-weight:600;margin-top:12px}
+button.g{background:transparent;color:var(--mu);border:1px solid var(--bd)}
+.big{display:flex;gap:8px;text-align:center}.big div{flex:1;background:var(--bg);border-radius:10px;padding:10px 4px}
+.big strong{display:block;font-size:1.25rem;color:var(--ac)}.big span{font-size:.72rem;color:var(--mu)}
+table{width:100%;border-collapse:collapse;font-size:.82rem}td,th{padding:5px 3px;border-bottom:1px solid var(--bd);text-align:left}
+.w{color:var(--wn);font-size:.82rem}details{font-size:.85rem;color:var(--mu)}summary{cursor:pointer;color:var(--tx);font-weight:600}
+</style></head><body>
+<h1>Workout Calculator</h1>
+<div id="status" class="sub">Loading… (if this never changes to Ready, JavaScript is blocked)</div><div class="sub">Calories (above resting) and estimated muscle stimulus, scaled to your own baseline max.</div>
+
+<div class="card"><h2>1 · Your profile &amp; baseline</h2>
+<div class="row"><div><label>Sex</label><select id="sex"><option value="m">Male</option><option value="f">Female</option></select></div>
+<div><label>Weight (lb)</label><input id="wt" type="number" inputmode="decimal" value="180"></div></div>
+<div class="row"><div><label>Height (ft)</label><input id="ft" type="number" inputmode="numeric" value="5"></div>
+<div><label>Height (in)</label><input id="inch" type="number" inputmode="numeric" value="9"></div></div>
+<div class="row"><div><label>Age</label><input id="age" type="number" inputmode="numeric" value="30"></div>
+<div><label>Body fat % (optional)</label><input id="bf" type="number" inputmode="decimal" placeholder="skip if unsure"></div></div>
+<div class="row"><div><label>Sleep (hrs/night, avg)</label><input id="sl" type="number" inputmode="decimal" value="7.5"></div>
+<div><label>Protein (g/day)</label><input id="pr" type="number" inputmode="numeric" value="120"></div></div>
+<label>Training experience</label><select id="lvl"><option value="n">Novice (&lt; 1 yr consistent)</option><option value="i">Intermediate (1–3 yrs)</option><option value="a">Advanced (3+ yrs)</option></select>
+<label style="margin-top:14px">Max reps to true failure at this bodyweight (curls &amp; raises: also the weight used)</label>
+<div id="base"><div class="ex"><b>Push-ups</b><input id="b_push" type="number" inputmode="numeric" placeholder="max reps" value="20"><span class="sub">bodyweight</span></div><div class="ex"><b>Pull-ups</b><input id="b_pull" type="number" inputmode="numeric" placeholder="max reps" value="10"><span class="sub">bodyweight</span></div><div class="ex"><b>Crunches</b><input id="b_crunch" type="number" inputmode="numeric" placeholder="max reps" value="10"><span class="sub">bodyweight</span></div><div class="ex"><b>EZ-bar curls</b><input id="b_curl" type="number" inputmode="numeric" placeholder="max reps" value="10"><input id="l_curl" type="number" inputmode="decimal" placeholder="lb" value="40"></div><div class="ex"><b>Lateral raises</b><input id="b_lat" type="number" inputmode="numeric" placeholder="max reps" value="10"><input id="l_lat" type="number" inputmode="decimal" placeholder="lb" value="10"></div><div class="ex"><b>Single-leg squats</b><input id="b_sls" type="number" inputmode="numeric" placeholder="max reps" value="10"><span class="sub">bodyweight</span></div></div>
+<div class="sub">Test each fresh, with good form, one exercise per day if needed. Your baseline is what every later set is compared against.</div></div>
+
+<div class="card"><h2>2 · Log a set</h2>
+<label>Exercise</label><select id="ex"><option value="push">Push-ups</option><option value="pull">Pull-ups</option><option value="crunch">Crunches</option><option value="curl">EZ-bar curls</option><option value="lat">Lateral raises</option><option value="sls">Single-leg squats</option></select>
+<div class="row"><div><label>Reps done</label><input id="reps" type="number" inputmode="numeric" value="15"></div>
+<div id="ldw"><label>Weight used (lb)</label><input id="ld" type="number" inputmode="decimal" value="30"></div></div>
+<div class="row"><div><label>Seconds per rep</label><input id="tempo" type="number" value="3"></div>
+<div><label>Rest after set (sec)</label><input id="rest" type="number" value="90"></div></div>
+<label>Average heart rate during the set + rest (bpm, optional)</label><input id="hr" type="number" inputmode="numeric" placeholder="leave blank if no monitor">
+<button id="add">Calculate &amp; add set</button></div>
+
+<div id="out"></div>
+
+<div class="card"><details><summary>Sources, formulas &amp; limits</summary>
+<p><b>Resting energy:</b> Mifflin-St Jeor from weight, height, age and sex. If you enter body fat, Katch-McArdle (370 + 21.6 × lean kg) is used instead. Your own resting rate per hour replaces the textbook 1 kcal/kg/hr, so exercise calories scale to you.</p>
+<p><b>Exercise calories:</b> (MET − 1) × your resting kcal/hr × hours. MET anchors: Compendium of Physical Activities (calisthenics 2.8 light, 3.8 moderate, 7.5–8.0 vigorous; resistance training 3.5–6.0) and measured push-up 3.31, pull-up 3.11, curl-up 3.14, lunge 4.05 METs (Vezina, Arizona State Univ., 2011). The MET slides with how close to failure the set was.</p>
+<p><b>Afterburn (EPOC):</b> reviews find EPOC is only 6–15% of the net exercise cost (Laforgia et al., 2006), larger with higher intensity and volume, and with rests under 60 s (Farinatti et al., 2012). I scale 6% to 15% by proximity to failure, ×1.2 for short rests. Exact resistance-exercise relationships are not established.</p>
+<p><b>Heart rate (optional):</b> Keytel et al. 2005 equations (age, weight, sex, HR). They were validated on steady aerobic exercise, and lifting raises HR out of proportion to energy use, so it gets only 30% weight in the total and is shown separately.</p>
+<p><b>Load:</b> push-up 64% of bodyweight (Ebben 2011); pull-up ≈ 100%; single-leg squat ≈ 84% (bodyweight minus free leg, Dempster); crunch ≈ 35% (my estimate, lifting the shoulder blades only). Curls and raises use your weight.</p>
+<p><b>Failure proximity:</b> Epley 1RM = load × (1 + reps/30), solved backwards; less accurate above ~12 reps.</p>
+<p><b>Muscle model (v3):</b> growth = target muscle mass × 0.03% per effective set × modifiers. The 0.03% comes from Schoenfeld, Ogborn &amp; Krieger 2017: each extra weekly set added about 0.37% to percentage muscle gain (about 0.24% near 12 sets/week, with diminishing returns per Pelland et al.). I assume typical study blocks of ~10 weeks, so one set done once is about one tenth of that. Total skeletal muscle = 38.4% (men) or 30.6% (women) of body weight (Janssen et al., 2000, MRI). Share of that muscle each exercise trains (push-up 10%, pull-up 12%, crunch 3%, curl 2.5%, raise 2.5%, single-leg squat 25%) is my anatomical estimate.</p>
+<p><b>Modifiers:</b> <i>Experience</i> ×1 / 0.5 / 0.25 (Wernbom et al., 2007: growth rate is higher in beginners, lower after 2–3 years, small after many years; the exact numbers are mine). <i>Sex</i>: no modifier, because relative gains are similar in men and women (Refalo et al., 2025; Roberts et al., 2020), while absolute gains differ through muscle mass. <i>Age</i>: ×1 up to 30, falling to ×0.25 at 70 (Phillips et al., 2017: older adults gained 1.06% vs 4.43% in young after 20 weeks; the straight line between is my interpolation). <i>Protein</i>: ×0.8 at ≤0.8 g/kg rising to ×1 at 1.6 g/kg (Morton et al., 2018: supplementation added ~0.30 kg lean mass, plateau near 1.6 g/kg; scaling derived by me). <i>Sleep</i>: ×1 at 7 h or more, falling to ×0.81 at 4 h (Saner et al., 2020: myofibrillar protein synthesis 1.24 vs 1.53 %/day after five nights of 4 h; short-term data in young men, so extrapolation). <i>Failure proximity</i>: ×1 within 2 reps of failure, falling to ×0.65 at 5 (Robinson et al., 2024: growth rises as sets get closer to failure, with wide uncertainty; load matters little if sets are near failure, Refalo et al., 2023; the exact curve is mine). <i>Volume</i>: effective sets 1–6 per week per exercise count fully, 7–12 count ×0.65, beyond ×0.4 (from the 0.37 → 0.24 slope drop).</p>
+<p><b>Honest limit:</b> this predicts the average trend, not you. Individual response varies widely, and these numbers are only meaningful when summed over weeks of repeated training.</p>
+<p><b>Not included:</b> hormones, genetics, diet energy balance. Real calorie burn varies ±20–30%. Not medical advice.</p></details></div>
+<button id="save">Save session to history</button><div id="histbox"></div><button class="g" id="reset">Clear session</button>
+<script>
+window.addEventListener("error",function(e){var t=document.getElementById("status");if(t){t.textContent="Error: "+e.message;t.style.color="#c0392b"}});
+(function(){"use strict";
+
+const EX={push:{m:.10,n:"Push-ups",lo:3.3,hi:8,f:.64},pull:{m:.12,n:"Pull-ups",lo:3.1,hi:8,f:1},crunch:{m:.03,n:"Crunches",lo:2.8,hi:3.8,f:.35},curl:{m:.025,n:"EZ-bar curls",lo:3.5,hi:6,ext:1},lat:{m:.025,n:"Lateral raises",lo:3.5,hi:6,ext:1},sls:{m:.25,n:"Single-leg squats",lo:4.05,hi:8,f:.84}};
+const $=id=>document.getElementById(id),LB=.45359237;let sets=[];
+const exs=$("ex");
+function sync(){$("ldw").style.display=EX[exs.value].ext?"":"none"}exs.onchange=sync;sync();
+try{const s=JSON.parse(localStorage.getItem("wc")||"{}");for(const id in s){if($(id))$(id).value=s[id]}sync()}catch(e){}
+function saveProf(){try{const s={};document.querySelectorAll("#base input,#sex,#wt,#ft,#inch,#lvl,#age,#bf,#sl,#pr").forEach(i=>s[i.id]=i.value);localStorage.setItem("wc",JSON.stringify(s))}catch(e){}}
+function load(e,kg,lb){return e.ext?lb*LB:e.f*kg}
+function rmr(kg){const A=+$("age").value||30,H=(+$("ft").value||0)*30.48+(+$("inch").value||0)*2.54,bf=+$("bf").value;
+ if(bf>3&&bf<60)return{v:370+21.6*kg*(1-bf/100),m:"Katch-McArdle"};
+ return{v:10*kg+6.25*H-5*A+($("sex").value=="m"?5:-161),m:"Mifflin-St Jeor"}}
+function wk(k){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay());return getHist().filter(x=>new Date(x.d)>=d).reduce((a,x)=>a+((x.e||{})[k]||0),0)}
+function calc(){
+ const k=exs.value,e=EX[k],kg=+$("wt").value*LB,reps=+$("reps").value,mx=+$("b_"+k).value;
+ if(!(kg>0)||!(reps>0)||!(mx>0))return null;
+ const L0=load(e,kg,e.ext?+$("l_"+k).value:0),L=load(e,kg,+$("ld").value);
+ if(!(L0>0)||!(L>0))return null;
+ const rm=L0*(1+mx/30),rtf=Math.max(1,30*(rm/L-1)),pct=Math.min(100,L/rm*100);
+ const rir=Math.max(0,rtf-reps),f=Math.min(1,reps/rtf),met=e.lo+(e.hi-e.lo)*f;
+ const tp=+$("tempo").value||3,rs=+$("rest").value||0,act=reps*tp/3600,rh=rs/3600;
+ const R=rmr(kg),mh=R.v/24,A=+$("age").value||30;
+ const work=(met-1)*mh*act+0.5*mh*rh;
+ const ep=work*(0.06+0.09*f*f)*(rs<60?1.2:1);
+ let hrk=null;const hr=+$("hr").value;
+ if(hr>0){const m=(act+rh)*60,x=$("sex").value=="m"?(-55.0969+.6309*hr+.1988*kg+.2017*A):(-20.4022+.4472*hr-.1263*kg+.074*A);hrk=Math.max(0,x/4.184*m-R.v/1440*m)}
+ let tot=work+ep;if(hrk!==null)tot=.7*tot+.3*(hrk+ep);
+ const ef=rir<=2?1:rir<=3?.9:rir<=4?.8:rir<=5?.65:rir<=8?.4:.1,eff=ef>=.65;
+ const pk=(+$("pr").value||0)/kg,pf=pk>=1.6?1:pk<=.8?.8:.8+.2*(pk-.8)/.8,sh=+$("sl").value||7,sf=sh>=7?1:sh<=4?.81:1-.19*(7-sh)/3,af=A<=30?1:A>=70?.25:1-.75*(A-30)/40;
+ const st=({n:1,i:.5,a:.25})[$("lvl").value]||1,nth=wk(k)+sets.filter(x=>x.k==k&&x.eff).length+1,dm=!eff||nth<=6?1:nth<=12?.65:.4;
+ const SM=kg*($("sex").value=="m"?.384:.306),grp=SM*e.m;
+ const g=grp*1000*0.0003*st*ef*pf*sf*af*dm;
+ return{k,nth,grp,n:e.n,reps,rtf,rir,pct,met,work,ep,hrk,kcal:tot,g,eff,rm:R.m,mods:[pf,sf,af,st,dm]}}
+function render(){
+ const t=sets.reduce((a,s)=>({k:a.k+s.kcal,g:a.g+s.g,n:a.n+(s.eff?1:0)}),{k:0,g:0,n:0});
+ const l=sets[sets.length-1];
+ let h="";
+ if(l)h+=`<div class="card"><h2>Last set: ${l.n}</h2><div class="big"><div><strong>${l.kcal.toFixed(1)}</strong><span>kcal (incl. afterburn)</span></div><div><strong>${l.g.toFixed(1)} g</strong><span>muscle stimulus</span></div><div><strong>${Math.round(l.pct)}%</strong><span>of your max</span></div></div>
+ <p class="sub">You did ${l.reps} of an estimated ${l.rtf.toFixed(0)} possible reps (about ${l.rir.toFixed(0)} in reserve). Effort ≈ ${l.met.toFixed(1)} METs. Calories: ${l.work.toFixed(1)} during + ${l.ep.toFixed(1)} afterburn (resting rate via ${l.rm})${l.hrk!==null?`; heart-rate method alone: ${l.hrk.toFixed(1)}`:""}. ${l.eff?"Close enough to failure to count as an effective set.":"<span class='w'>Far from failure, so little growth stimulus.</span>"} ${l.mods.some(x=>x<1)?"<span class='w'>Protein, sleep, age, experience or high weekly volume is trimming this estimate.</span> ":""}This is effective set #${l.nth} this week for this exercise, targeting about ${l.grp.toFixed(1)} kg of muscle. Plausible muscle range: ${(l.g*.5).toFixed(1)}–${(l.g*1.5).toFixed(1)} g if repeated weekly.</p></div>
+ <div class="card"><h2>Session total</h2><div class="big"><div><strong>${t.k.toFixed(0)}</strong><span>kcal</span></div><div><strong>${t.g.toFixed(1)} g</strong><span>muscle</span></div><div><strong>${(t.k/7.7).toFixed(1)} g</strong><span>fat equivalent</span></div></div>
+ <p class="sub">${sets.length} sets, ${t.n} effective. Fat equivalent uses 7,700 kcal per kg, a rough rule.</p>
+ <table><tr><th>#</th><th>Exercise</th><th>Reps</th><th>kcal</th><th>g</th></tr>${sets.map((s,i)=>`<tr><td>${i+1}</td><td>${s.n}</td><td>${s.reps}</td><td>${s.kcal.toFixed(1)}</td><td>${s.g.toFixed(1)}</td></tr>`).join("")}</table></div>`;
+ $("out").innerHTML=h}
+$("add").addEventListener("click",()=>{const r=calc();if(!r){$("out").innerHTML="<div class='card w'>Please fill in weight, reps and baseline max for this exercise.</div>";return}saveProf();sets.push(r);render()});
+let memHist=[];function getHist(){try{return JSON.parse(localStorage.getItem("wch")||"[]")}catch(e){return memHist}}
+function showHist(){const h=getHist();if(!h.length){$("histbox").innerHTML="";return}const w={};h.forEach(x=>{const d=new Date(x.d),m=new Date(d);m.setDate(d.getDate()-d.getDay());const key=m.toISOString().slice(0,10);w[key]=w[key]||{k:0,g:0,n:0,c:0};w[key].k+=x.k;w[key].g+=x.g;w[key].n+=x.n;w[key].c++});
+ $("histbox").innerHTML=`<div class="card"><h2>Weekly history</h2><table><tr><th>Week of</th><th>Sessions</th><th>kcal</th><th>Eff. sets</th><th>Muscle g</th></tr>${Object.keys(w).sort().reverse().slice(0,6).map(k=>`<tr><td>${k}</td><td>${w[k].c}</td><td>${w[k].k.toFixed(0)}</td><td>${w[k].n}</td><td>${w[k].g.toFixed(1)}</td></tr>`).join("")}</table><p class="sub">Research on weekly volume (e.g. Schoenfeld, 2017) links more weekly hard sets per muscle group to more growth, up to a point.</p></div>`}
+$("save").addEventListener("click",()=>{if(!sets.length)return;const t=sets.reduce((a,s)=>({k:a.k+s.kcal,g:a.g+s.g,n:a.n+(s.eff?1:0)}),{k:0,g:0,n:0});try{const h=getHist();const ec={};sets.forEach(x=>{if(x.eff)ec[x.k]=(ec[x.k]||0)+1});h.push({d:new Date().toISOString(),k:t.k,g:t.g,n:t.n,e:ec});localStorage.setItem("wch",JSON.stringify(h))}catch(e){}sets=[];render();showHist()});
+showHist();
+$("reset").addEventListener("click",()=>{sets=[];render()});
+
+document.getElementById("status").textContent="Ready ✓ — tap Calculate & add set";
+})();
+</script></body></html>
